@@ -1,0 +1,139 @@
+<html>
+<meta charset="UTF-8">
+
+</html>
+<script src="http://libs.baidu.com/jquery/1.9.0/jquery.js"></script>
+<script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.5.1.min.js"></script>
+<script src="https://gw.alipayobjects.com/as/g/h5-lib/alipayjsapi/3.1.1/alipayjsapi.min.js"></script>
+
+<script>
+    // document.forms[0].submit();
+    function getURLParameter(name) {
+        return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null;
+    }
+    var openid = getURLParameter('openid');
+    var order_code = getURLParameter('order_code');
+    var client = getURLParameter('client');
+
+    var appId='';
+    var timeStamp_s='';
+    var nonceStr='';
+    var package='';
+    var paySign='';
+
+    var out_trade_no='';
+    var version='';
+    var format='';
+    var sign_type='';
+    var method='';
+    var charset='';
+    var notify_url='';
+    var return_url='';
+    var sign='';
+    var biz_content='';
+    var timestamp='';
+    var zfb_url='';
+
+    $(document).ready(function () {
+        $.ajax({
+       //        url:'http://dev.mh.com/api/app/order/pay',
+           url: 'http://zfj.api.fmcgbi.com/api/app/order/pay',
+            type: 'POST',
+            data: {
+                "order_code": order_code,
+                "openid": openid,
+                "client": client,
+            },
+            dataType: 'json',
+            success: function (res) {
+                if(client=="wechat"){
+                    var appId = res.data.appId;
+                    var timeStamp_s = res.data.timeStamp;
+
+                    var nonceStr = res.data.nonceStr;
+                    var package = res.data.package;
+                    var paySign = res.data.paySign;
+                }else{
+                    /*  var app_id=res.app_id;
+                      var version=res.version;
+                      var format=res.format;
+                      var sign_type=res.sign_type;
+                      var method=res.method;
+                      var charset=res.charset;
+                      var notify_url=res.notify_url;
+                      var return_url=res.notify_url;
+                      var sign=res.sign;
+                      var biz_content=res.biz_content;
+                      var timestamp=res.timestamp; */
+                    var zfb_url=res.mweb_url;
+
+
+                }
+
+                if (res.code == 0) {// //???H5???
+                    if(client=="wechat"){
+                        if (typeof WeixinJSBridge == "undefined") {
+                            if (document.addEventListener) {
+                                document.addEventListener('WeixinJSBridgeReady', onBridgeReady, false);
+                            } else if (document.attachEvent) {
+                                document.attachEvent('WeixinJSBridgeReady', onBridgeReady);
+                                document.attachEvent('onWeixinJSBridgeReady', onBridgeReady);
+                            }
+                        } else {
+                            WeixinJSBridge.invoke(
+                                'getBrandWCPayRequest', {
+                                    "appId": appId,     //?????ID???????????
+                                    "timeStamp": timeStamp_s,         //????????1970????????????
+                                    "nonceStr": nonceStr, //?????
+                                    "package": package,
+                                    "signType": "MD5",         //???????????
+                                    "paySign": paySign //??????
+                                },
+                                function (res) {
+
+                                    if (res.err_msg == "get_brand_wcpay_request:ok") {
+                                        window.location.href="https://www.wechatpay.com.cn";
+
+                                    }
+                                });
+                        }
+                    }else if(client=="ali"){
+                      //  window.open(zfb_url);
+                        window.location.href=zfb_url;
+
+                    }
+
+
+                } else {
+                    //??????
+                }
+
+            }
+        });
+
+
+    });
+
+    function onBridgeReady(){
+        WeixinJSBridge.invoke(
+            'getBrandWCPayRequest', {
+                "appId":appId,     //?????ID???????????
+                "timeStamp":timeStamp_s,         //????????1970????????????
+                "nonceStr":nonceStr, //?????
+                "package":package,
+                "signType":"MD5",         //???????????
+                "paySign":paySign //??????
+            },
+            function(res){
+                if(res.err_msg == "get_brand_wcpay_request:ok" ){
+                    // ??????????ж???????,??????????????
+                    //res.err_msg?????????????????ok?????????????????????
+                }
+            });
+    }
+
+
+
+
+
+</script>
